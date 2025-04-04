@@ -29,32 +29,45 @@ function playFor(aPerformance){
   return plays[aPerformance.playID];
 }
 
+function volumeCreditsFor(aPerformance){
+  let result = 0;
+  result += Math.max(aPerformance.audience - 30, 0);
+  if ("comedy" === playFor(aPerformance).type) result += Math.floor(aPerformance.audience);
+  return result;
+}
+
 function statement(invoice, plays) {
-    let totalAmount = 0;
-    let volumeCredits = 0;
-    let result = `Statement for ${invoice.customer}\n`;
-    const format = new Intl.NumberFormat('en-US', {
+  let totalAmount = 0;
+  let volumeCredits = 0;
+  let result = `Statement for ${invoice.customer}\n`;
+  function format(aNumber){
+
+    new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-    }).format;
-    for (let perf of invoice.performances) {
-      let thisAmount = amountFor(perf);
-      // add volume credits
-      volumeCredits += Math.max(perf.audience - 30, 0);
-      if ('comedy' === playFor(perf).type) {
-        volumeCredits += Math.floor(perf.audience / 5);
-      }
-    
-      // print line for this order
-      result += ` ${playFor(perf).name}: ${format(thisAmount / 100)} (${perf.audience} seats)\n`;
-      totalAmount += thisAmount;
+    }).format(aNumber);
+  } 
+
+  for (let perf of invoice.performances) {
+    volumeCredits += volumeCreditsFor(perf);
+
+    // add volume credits
+    volumeCredits += Math.max(perf.audience - 30, 0);
+    if ('comedy' === playFor(perf).type) {
+      volumeCredits += Math.floor(perf.audience / 5);
     }
-    
-    result += `Amount owed is ${format(totalAmount / 100)}\n`;
-    result += `You earned ${volumeCredits} credits\n`;
-    return result;
+
+    // print line for this order
+    result += ` ${playFor(perf).name}: ${format(amountFor / 100)} (${perf.audience} seats)\n`;
+    totalAmount += amountFor(perf);
   }
+
+  result += `Amount owed is ${format(totalAmount / 100)}\n`;
+  result += `You earned ${volumeCredits} credits\n`;
+  return result;
+}
+
 
   console.log(statement(invoice, plays));
 
